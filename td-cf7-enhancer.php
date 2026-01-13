@@ -72,14 +72,22 @@ function cf7_regency_create_default_form()
     CF7;
 
     $mail_template = <<<MAIL
-    Nama : [nama]
-    Email : [email]
-    Telepon : [telepon]
-    WhatsApp : [whatsapp]
-    Perusahaan : [perusahaan]
-    Karyawan : [karyawan]
-    Kota/Kab. : [kota-kab]
+    Halo Tim,<br>
+    Telah masuk lead baru melalui form Lead Magnet dengan detail sebagai berikut:
+    <br><br>
+    Nama : [nama]<br>
+    Email : [email]<br>
+    Telepon : [telepon]<br>
+    WhatsApp : [whatsapp]<br>
+    Perusahaan : [perusahaan]<br>
+    Karyawan : [karyawan]<br>
+    Kota/Kab. : [kota-kab]<br>
     Website : [website]
+    <br><br>
+    Silakan segera ditindaklanjuti sesuai dengan prosedur yang berlaku.
+    <br><br>
+    Terima kasih.<br>
+    Sistem Lead Magnet
     MAIL;
 
     $form_id = wp_insert_post([
@@ -95,7 +103,7 @@ function cf7_regency_create_default_form()
     update_post_meta($form_id, '_form', $form_template);
 
     update_post_meta($form_id, '_mail', [
-        'subject'            => 'Lead Magnet Form',
+        'subject'            => 'Lead Baru Masuk - Lead Magnet',
         'sender'             => '[nama] <[email]>',
         'body'               => $mail_template,
         'recipient'          => get_option('admin_email'),
@@ -113,7 +121,7 @@ function cf7_regency_create_default_form()
         'body'      => <<<EOT
         Halo [nama],
 
-        Terima kasih telah menghubungi kami. Kami akan segera menghubungi Anda melalui WhatsApp di nomor [whatsapp].
+        Terima kasih telah menghubungi kami. Kami akan segera menghubungi Anda melalui WhatsApp di nomor +62[whatsapp].
 
         Salam,
         Tim {get_bloginfo('name')}

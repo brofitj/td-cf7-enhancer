@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
                 if (submitBtn) {
-                    submitBtn.before(errorDiv);
+                    submitBtn.after(errorDiv);
                 } else {
                     form.appendChild(errorDiv);
                 }
