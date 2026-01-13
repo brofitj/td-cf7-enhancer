@@ -4,13 +4,25 @@
  */
 
 /* Global Style */
+.wpcf7-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .wpcf7-form label {
+    display: flex;
+    flex-direction: column;
     font-family: inherit;
     font-size: inherit;
     color: inherit;
     font-weight: inherit;
     letter-spacing: inherit;
     line-height: inherit;
+}
+
+.wpcf7-form label[hidden] {
+    display: none;
 }
 
 .wpcf7-form .wpcf7-form-control-wrap .wpcf7-form-control {
