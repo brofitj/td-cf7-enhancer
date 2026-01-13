@@ -2,7 +2,7 @@
 /**
  * Plugin Name: TebarDigital - Contact Form 7 Enhancer
  * Plugin URI: #
- * Description: Plugin ini menambahkan peningkatan fitur pada Contact Form 7 berupa integrasi Select2 untuk field select yang lebih interaktif, kustomisasi WhatsApp untuk kebutuhan lead handling, serta perbaikan UI agar tampilan form lebih modern, rapi, dan user-friendly.
+ * Description: Plugin ini menambahkan peningkatan fitur pada Contact Form 7 berupa integrasi Select2, kustomisasi WhatsApp untuk lead handling, validasi tambahan, tracking UTM, serta perbaikan UI agar form lebih modern dan user-friendly.
  * Version: 1.0
  * Author: TebarDigital
  * Author URI: https://tebardigital.co.id
@@ -15,9 +15,11 @@ if (!defined('ABSPATH')) {
 
 /**
  * Membuat default Contact Form 7 saat plugin diaktifkan
+ * jika form default belum tersedia
  */
 register_activation_hook(__FILE__, 'cf7_regency_create_default_form');
-function cf7_regency_create_default_form() {
+function cf7_regency_create_default_form()
+{
     if (!function_exists('wpcf7_contact_form')) {
         return;
     }
@@ -38,7 +40,7 @@ function cf7_regency_create_default_form() {
     [text* nama autocomplete:name] </label>
 
     <label> Email
-    [email* email autocomplete:email] </label>
+    [email email autocomplete:email] </label>
 
     <label> Telepon
     [text telepon autocomplete:tel placeholder "+62..."] </label>
@@ -93,21 +95,22 @@ function cf7_regency_create_default_form() {
     update_post_meta($form_id, '_form', $form_template);
 
     update_post_meta($form_id, '_mail', [
-        'subject'             => 'Lead Magnet Form',
-        'sender'              => '[nama] <[email]>',
-        'body'                => $mail_template,
-        'recipient'           => get_option('admin_email'),
-        'additional_headers'  => 'Reply-To: [email]',
-        'attachments'         => '',
-        'use_html'            => 0,
-        'exclude_blank'       => 0
+        'subject'            => 'Lead Magnet Form',
+        'sender'             => '[nama] <[email]>',
+        'body'               => $mail_template,
+        'recipient'          => get_option('admin_email'),
+        'additional_headers' => 'Reply-To: [email]',
+        'attachments'        => '',
+        'use_html'           => 0,
+        'exclude_blank'      => 0
     ]);
 
     update_post_meta($form_id, '_mail_2', [
-        'active'              => 1,
-        'subject'             => 'Terima kasih atas minat Anda',
-        'sender'              => get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
-        'body'                => <<<EOT
+        'active'    => 1,
+        'subject'   => 'Terima kasih atas minat Anda',
+        'sender'    => get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
+        'recipient' => '[email]',
+        'body'      => <<<EOT
         Halo [nama],
 
         Terima kasih telah menghubungi kami. Kami akan segera menghubungi Anda melalui WhatsApp di nomor [whatsapp].
@@ -115,11 +118,7 @@ function cf7_regency_create_default_form() {
         Salam,
         Tim {get_bloginfo('name')}
         EOT,
-        'recipient'           => '[email]',
-        'additional_headers'  => '',
-        'attachments'         => '',
-        'use_html'            => 0,
-        'exclude_blank'       => 0
+        'use_html' => 0
     ]);
 
     update_post_meta($form_id, '_messages', [
@@ -149,9 +148,9 @@ function cf7_regency_create_default_form() {
  * Menampilkan notifikasi admin setelah aktivasi plugin
  */
 add_action('admin_notices', 'cf7_regency_activation_notice');
-function cf7_regency_activation_notice() {
+function cf7_regency_activation_notice()
+{
     $form_id = get_transient('cf7_regency_form_created');
-
     if (!$form_id) {
         return;
     }
@@ -160,7 +159,7 @@ function cf7_regency_activation_notice() {
     $shortcode = '[contact-form-7 id="' . $form_id . '" title="Lead Magnet Form"]';
 
     echo '<div class="notice notice-success is-dismissible">
-        <p><strong>✅ CF7 Regency Select:</strong> Form berhasil dibuat.</p>
+        <p><strong>✅ CF7 Enhancer:</strong> Form berhasil dibuat.</p>
         <p><input type="text" value="' . esc_attr($shortcode) . '" readonly onclick="this.select()" style="width:400px"></p>
         <p>
             <a href="' . esc_url($edit_url) . '" class="button button-primary">Edit Form</a>
@@ -183,48 +182,25 @@ add_action('wpcf7_init', function () {
 });
 
 /**
- * Enqueue asset frontend (Select2 + custom style/script)
+ * Enqueue asset frontend (Select2 & custom asset)
  */
 add_action('wp_enqueue_scripts', function () {
     if (!function_exists('wpcf7_enqueue_scripts')) {
         return;
     }
 
-    wp_enqueue_style(
-        'select2',
-        'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css',
-        [],
-        '4.1.0'
-    );
+    wp_enqueue_style('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css', [], '4.1.0');
+    wp_enqueue_script('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', ['jquery'], '4.1.0', true);
 
-    wp_enqueue_script(
-        'select2',
-        'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js',
-        ['jquery'],
-        '4.1.0',
-        true
-    );
-
-    wp_enqueue_style(
-        'cf7-regency-select',
-        plugin_dir_url(__FILE__) . 'assets/frontend/css/frontend.css',
-        ['select2'],
-        '2.0.0'
-    );
-
-    wp_enqueue_script(
-        'cf7-regency-select',
-        plugin_dir_url(__FILE__) . 'assets/frontend/js/frontend.js',
-        ['jquery', 'select2'],
-        '2.0.0',
-        true
-    );
+    wp_enqueue_style('cf7-regency-select', plugin_dir_url(__FILE__) . 'assets/frontend/css/frontend.css', ['select2'], '2.0.0');
+    wp_enqueue_script('cf7-regency-select', plugin_dir_url(__FILE__) . 'assets/frontend/js/frontend.js', ['jquery', 'select2'], '2.0.0', true);
 });
 
 /**
- * Mengambil data kabupaten/kota dari file terpisah
+ * Mengambil data kabupaten/kota dari file data terpisah
  */
-function cf7_get_regencies_data() {
+function cf7_get_regencies_data()
+{
     static $regencies = null;
 
     if ($regencies !== null) {
@@ -238,9 +214,10 @@ function cf7_get_regencies_data() {
 }
 
 /**
- * Render HTML select untuk custom CF7 tag
+ * Render HTML select untuk custom CF7 tag regency_select
  */
-function cf7_regency_select_handler($tag) {
+function cf7_regency_select_handler($tag)
+{
     $name     = $tag->name;
     $required = $tag->is_required() ? 'required' : '';
     $class    = 'regency-select wpcf7-form-control wpcf7-select';
@@ -261,8 +238,9 @@ function cf7_regency_select_handler($tag) {
  */
 add_filter('wpcf7_validate_regency_select', 'cf7_regency_select_validation', 10, 2);
 add_filter('wpcf7_validate_regency_select*', 'cf7_regency_select_validation', 10, 2);
-function cf7_regency_select_validation($result, $tag) {
-    $value = isset($_POST[$tag->name]) ? trim($_POST[$tag->name]) : '';
+function cf7_regency_select_validation($result, $tag)
+{
+    $value = trim($_POST[$tag->name] ?? '');
     if ($tag->is_required() && $value === '') {
         $result->invalidate($tag, 'Silakan pilih kabupaten/kota');
     }
@@ -270,24 +248,60 @@ function cf7_regency_select_validation($result, $tag) {
 }
 
 /**
- * Enqueue script tracking UTM untuk CF7
+ * Validasi CF7: minimal salah satu field kontak harus diisi
+ * (email / telepon / WhatsApp)
+ */
+add_filter('wpcf7_validate', 'td_cf7_validate_min_one_contact', 10, 2);
+function td_cf7_validate_min_one_contact($result, $tags)
+{
+    $submission = WPCF7_Submission::get_instance();
+    if (!$submission) {
+        return $result;
+    }
+
+    $data = $submission->get_posted_data();
+
+    if (
+        trim($data['email'] ?? '') === '' &&
+        trim($data['telepon'] ?? '') === '' &&
+        trim($data['whatsapp'] ?? '') === ''
+    ) {
+        $message = 'Minimal salah satu: Email, Telepon, atau WhatsApp harus diisi.';
+        $result->invalidate('email', $message);
+        $result->invalidate('telepon', $message);
+        $result->invalidate('whatsapp', $message);
+    }
+
+    return $result;
+}
+
+/**
+ * Enqueue script validasi frontend CF7
+ */
+add_action('wp_enqueue_scripts', 'td_cf7_enqueue_assets');
+function td_cf7_enqueue_assets()
+{
+    if (!function_exists('wpcf7')) {
+        return;
+    }
+
+    wp_enqueue_script('td-cf7-validation', plugin_dir_url(__FILE__) . 'assets/frontend/js/cf7-validation.js', [], '1.0.0', true);
+}
+
+/**
+ * Enqueue script tracking UTM untuk Contact Form 7
  */
 add_action('wp_enqueue_scripts', 'td_cf7_enqueue_utm_tracking');
-function td_cf7_enqueue_utm_tracking() {
+function td_cf7_enqueue_utm_tracking()
+{
     if (!defined('WPCF7_VERSION')) {
         return;
     }
 
-    wp_enqueue_script(
-        'td-cf7-utm-tracking',
-        plugin_dir_url(__FILE__) . 'assets/frontend/js/utm-tracking.js',
-        [],
-        '1.0.0',
-        true
-    );
+    wp_enqueue_script('td-cf7-utm-tracking', plugin_dir_url(__FILE__) . 'assets/frontend/js/utm-tracking.js', [], '1.0.0', true);
 }
 
 /**
- * Menonaktifkan auto-formatting (<p> dan <br>) bawaan Contact Form 7.
+ * Menonaktifkan auto-formatting bawaan Contact Form 7
  */
 add_filter('wpcf7_autop_or_not', '__return_false');

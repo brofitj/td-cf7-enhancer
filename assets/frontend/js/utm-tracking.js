@@ -1,5 +1,18 @@
 document.addEventListener('DOMContentLoaded', function () {
 
+    /**
+     * Mengambil parameter tracking (UTM & Ads)
+     * dari URL saat ini
+     *
+     * Parameter yang didukung:
+     * - utm_source
+     * - utm_medium
+     * - utm_campaign
+     * - utm_term
+     * - utm_content
+     * - gclid
+     * - gbraid
+     */
     function getLeadMagnetParameters() {
         const params = new URLSearchParams(window.location.search);
 
@@ -14,6 +27,14 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
+    /**
+     * Mengisi otomatis field input tersembunyi
+     * pada Contact Form 7 berdasarkan parameter URL
+     *
+     * Mendukung format nama field:
+     * - utm_source
+     * - utm-source
+     */
     function populateLeadMagnetFields() {
         const leadMagnetParams = getLeadMagnetParameters();
 
@@ -33,4 +54,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     populateLeadMagnetFields();
+
 });
