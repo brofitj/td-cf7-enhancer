@@ -1,58 +1,72 @@
-document.addEventListener('DOMContentLoaded', function () {
+(function () {
+    'use strict';
+
+    const UTM_FIELDS = [
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_term',
+        'utm_content',
+        'gclid',
+        'gbraid'
+    ];
 
     /**
-     * Mengambil parameter tracking (UTM & Ads)
-     * dari URL saat ini
-     *
-     * Parameter yang didukung:
-     * - utm_source
-     * - utm_medium
-     * - utm_campaign
-     * - utm_term
-     * - utm_content
-     * - gclid
-     * - gbraid
+     * Simpan UTM dari URL ke localStorage
      */
-    function getLeadMagnetParameters() {
+    function storeUTMFromURL() {
         const params = new URLSearchParams(window.location.search);
 
-        return {
-            utm_source: params.get('utm_source') || '',
-            utm_medium: params.get('utm_medium') || '',
-            utm_campaign: params.get('utm_campaign') || '',
-            utm_term: params.get('utm_term') || '',
-            utm_content: params.get('utm_content') || '',
-            gclid: params.get('gclid') || '',
-            gbraid: params.get('gbraid') || '',
-        };
-    }
-
-    /**
-     * Mengisi otomatis field input tersembunyi
-     * pada Contact Form 7 berdasarkan parameter URL
-     *
-     * Mendukung format nama field:
-     * - utm_source
-     * - utm-source
-     */
-    function populateLeadMagnetFields() {
-        const leadMagnetParams = getLeadMagnetParameters();
-
-        Object.entries(leadMagnetParams).forEach(([key, value]) => {
-            if (!value) return;
-
-            const finalKey = key.includes('_') ? key.replaceAll('_', '-') : key;
-
-            const input = document.querySelector(
-                `input[name="${finalKey}"], input[name="${key}"]`
-            );
-
-            if (input) {
-                input.value = value;
+        UTM_FIELDS.forEach(function (field) {
+            const value = params.get(field);
+            if (value) {
+                localStorage.setItem(field, value);
             }
         });
     }
 
-    populateLeadMagnetFields();
+    /**
+     * Isi semua hidden input dari localStorage
+     */
+    function fillUTMFields() {
+        UTM_FIELDS.forEach(function (field) {
+            const value = localStorage.getItem(field);
+            if (!value) return;
 
-});
+            document.querySelectorAll('input[name="' + field + '"]').forEach(function (input) {
+                if (input.value !== value) {
+                    input.value = value;
+                }
+            });
+        });
+    }
+
+    /**
+     * Observe perubahan DOM (untuk Divi & CF7 AJAX re-render)
+     */
+    function observeDOMChanges() {
+        const observer = new MutationObserver(function () {
+            fillUTMFields();
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    /**
+     * Init
+     */
+    function init() {
+        storeUTMFromURL();
+        fillUTMFields();
+        observeDOMChanges();
+    }
+
+    // Delay sedikit supaya aman dari NitroPack defer
+    window.addEventListener('load', function () {
+        setTimeout(init, 500);
+    });
+
+})();
