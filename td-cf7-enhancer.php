@@ -48,6 +48,9 @@ function cf7_regency_create_default_form()
     <label> WhatsApp
     [text whatsapp autocomplete:whatsapp placeholder "+62..."] </label>
 
+    <label> Jabatan
+    [text jabatan autocomplete:position] </label>
+
     <label> Perusahaan
     [text perusahaan autocomplete:organization] </label>
 
@@ -79,6 +82,7 @@ function cf7_regency_create_default_form()
     Email : [email]<br>
     Telepon : [telepon]<br>
     WhatsApp : [whatsapp]<br>
+    Jabatan : [perusahaan]<br>
     Perusahaan : [perusahaan]<br>
     Karyawan : [karyawan]<br>
     Kota/Kab. : [kota-kab]<br>
