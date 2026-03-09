@@ -3,7 +3,7 @@
  * Plugin Name: TebarDigital - Contact Form 7 Enhancer
  * Plugin URI: #
  * Description: Plugin ini menambahkan peningkatan fitur pada Contact Form 7 berupa integrasi Select2, kustomisasi WhatsApp untuk lead handling, validasi tambahan, tracking UTM, serta perbaikan UI agar form lebih modern dan user-friendly.
- * Version: 1.2
+ * Version: 1.2.1
  * Author: TebarDigital
  * Author URI: https://tebardigital.co.id
  * License: GPL2
